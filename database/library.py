@@ -1570,7 +1570,7 @@ class Library:
         if not utils.LiveTVEnabled:
             return
 
-        SimpleIptvSettings = utils.readFileString("special://home/addons/plugin.service.emby-next-gen/resources/iptvsimple.xml")
+        SimpleIptvSettings = utils.readFileString("special://home/addons/plugin.service.drivemby/resources/iptvsimple.xml")
         SimpleIptvSettings = SimpleIptvSettings.replace("SERVERID", self.ServerData['ServerId'])
         utils.SendJson("Addons.SetAddonEnabled", '{"addonid":"pvr.iptvsimple","enabled":false}', False)
         utils.writeFile(f"special://profile/addon_data/pvr.iptvsimple/instance-settings-{str(int(self.ServerData['ServerId'], 16))[:4]}.xml", SimpleIptvSettings.encode("utf-8"))

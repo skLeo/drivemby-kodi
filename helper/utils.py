@@ -17,7 +17,7 @@ import xbmc
 import xbmcaddon
 import xbmcgui
 
-Addon = xbmcaddon.Addon("plugin.service.emby-next-gen")
+Addon = xbmcaddon.Addon("plugin.service.drivemby")
 addon_version = Addon.getAddonInfo('version')
 addon_name = Addon.getAddonInfo('name')
 CustomDialogParameters = (Addon.getAddonInfo('path'), "default", "1080i")
@@ -230,9 +230,9 @@ trailer_remote_options = {}
 trailer_playback = 2
 trailer_local_folder = True
 trailer_local = True
-DownloadPath = "special://profile/addon_data/plugin.service.emby-next-gen/"
-FolderAddonUserdata = "special://profile/addon_data/plugin.service.emby-next-gen/"
-FolderEmbyTemp = "special://profile/addon_data/plugin.service.emby-next-gen/temp/"
+DownloadPath = "special://profile/addon_data/plugin.service.drivemby/"
+FolderAddonUserdata = "special://profile/addon_data/plugin.service.drivemby/"
+FolderEmbyTemp = "special://profile/addon_data/plugin.service.drivemby/temp/"
 FolderUserdataThumbnails = "special://profile/Thumbnails/"
 PlaylistPathMusic = "special://profile/playlists/music/"
 PlaylistPathVideo = "special://profile/playlists/video/"
@@ -294,7 +294,7 @@ SyncLock = True
 DatabaseFiles = {'texture': "", 'texture-version': 0, 'music': "", 'music-version': 0, 'video': "", 'video-version': 0, 'epg': "", 'epg-version': 0, 'tv': "", 'tv-version': 0, 'addon': "", 'addon-version': 0}
 Tos = "CS5, EF (Expedited Forwarding)"
 IconExtensions = ("jpg", "png", "gif", "webp", "apng", "avif", "svg", "ukn")
-FontPath = xbmcvfs.translatePath("special://home/addons/plugin.service.emby-next-gen/resources/font/LiberationSans-Bold.ttf")
+FontPath = xbmcvfs.translatePath("special://home/addons/plugin.service.drivemby/resources/font/LiberationSans-Bold.ttf")
 noimagejpg = b''
 NextGenOnline = threading.Event()
 ProgressBars = [True, {}] # [ProgressbarsEnabled, {Header, Message, Value, ProgressBar}]
@@ -1279,27 +1279,27 @@ def InitSettings():
     NewIcon = ""
 
     if animateicon:
-        if icon and icon != "special://home/addons/plugin.video.emby-next-gen/resources/icon-animated.gif":
+        if icon and icon != "special://home/addons/plugin.video.drivemby/resources/icon-animated.gif":
             NewIcon = "animated"
 
-        icon = "special://home/addons/plugin.video.emby-next-gen/resources/icon-animated.gif"
+        icon = "special://home/addons/plugin.video.drivemby/resources/icon-animated.gif"
     else:
-        if icon and icon != "special://home/addons/plugin.service.emby-next-gen/resources/icon.png":
+        if icon and icon != "special://home/addons/plugin.service.drivemby/resources/icon.png":
             NewIcon = "static"
 
-        icon = "special://home/addons/plugin.service.emby-next-gen/resources/icon.png"
+        icon = "special://home/addons/plugin.service.drivemby/resources/icon.png"
 
     if NewIcon:
         for PluginId in ("video", "image", "audio", "service"):
             if DebugLog: xbmc.log("EMBY.helper.utils (DEBUG): Toggle icon", 1) # LOGINFO
-            AddonXml = readFileString(f"special://home/addons/plugin.{PluginId}.emby-next-gen/addon.xml")
+            AddonXml = readFileString(f"special://home/addons/plugin.{PluginId}.drivemby/addon.xml")
 
             if NewIcon == "static":
                 AddonXml = AddonXml.replace("resources/icon-animated.gif", "resources/icon.png")
             else:
                 AddonXml = AddonXml.replace("resources/icon.png", "resources/icon-animated.gif")
 
-            writeFile(f"special://home/addons/plugin.{PluginId}.emby-next-gen/addon.xml", AddonXml)
+            writeFile(f"special://home/addons/plugin.{PluginId}.drivemby/addon.xml", AddonXml)
 
     displayMessage *= 1000
     newContentTime *= 1000
@@ -1459,7 +1459,7 @@ def check_iptvsimple():
 
 def notify_event(Message, Data, SendOption):
     if NotifyEvents and SendOption:
-        SendJson("JSONRPC.NotifyAll", f'{{"sender": "emby-next-gen", "message": "{Message}", "data": {json.dumps(Data)}}}', True)
+        SendJson("JSONRPC.NotifyAll", f'{{"sender": "drivemby", "message": "{Message}", "data": {json.dumps(Data)}}}', True)
 
 def start_thread(Object, Args):
     if SystemShutdown:
@@ -1550,7 +1550,7 @@ def ActivateWindow(WindowId, Path, DialogClose=False, WaitForOpen=0):
 def refresh_DynamicNode():
     MenuPath = xbmc.getInfoLabel('Container.FolderPath')
 
-    if MenuPath.startswith("plugin://plugin.service.emby-next-gen/") and "mode=browse" in MenuPath.lower():
+    if MenuPath.startswith("plugin://plugin.service.drivemby/") and "mode=browse" in MenuPath.lower():
         if DebugLog: xbmc.log("Emby.hooks.utils: UserDataChanged refresh dynamic nodes", 1) # LOGINFO
         xbmc.executebuiltin('Container.Refresh')
         sleep(0.1) # Kodi needs time to process
@@ -1628,8 +1628,8 @@ InitSettings()
 # Find Kodi's database files
 DatabaseFiles = {'texture': "", 'texture-version': 0, 'music': "", 'music-version': 0, 'video': "", 'video-version': 0, 'epg': "", 'epg-version': 0, 'tv': "", 'tv-version': 0, 'addon': "", 'addon-version': 0}
 _, DatabaseFilesFound = xbmcvfs.listdir("special://profile/Database/")
-FontPath = xbmcvfs.translatePath("special://home/addons/plugin.service.emby-next-gen/resources/font/LiberationSans-Bold.ttf")
-noimagejpg = readFileBinary("special://home/addons/plugin.service.emby-next-gen/resources/noimage.jpg")
+FontPath = xbmcvfs.translatePath("special://home/addons/plugin.service.drivemby/resources/font/LiberationSans-Bold.ttf")
+noimagejpg = readFileBinary("special://home/addons/plugin.service.drivemby/resources/noimage.jpg")
 set_settings_bool('artworkcacheenable', True)
 
 for DatabaseFileFound in DatabaseFilesFound:

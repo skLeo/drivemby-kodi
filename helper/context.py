@@ -193,11 +193,11 @@ def similar(EmbyType):
         return
 
     if EmbyType in ("Movie", "Video", "Series", "Season", "Episode", "MusicVideo"):
-        utils.ActivateWindow("videos", f"plugin://plugin.service.emby-next-gen/?id={EmbyId}&mode=browse&query=similar&server={ServerId}&parentid=0&content=all&libraryid=0")
+        utils.ActivateWindow("videos", f"plugin://plugin.service.drivemby/?id={EmbyId}&mode=browse&query=similar&server={ServerId}&parentid=0&content=all&libraryid=0")
     elif EmbyType in ("MusicArtist", "MusicAlbum", "Audio"):
-        utils.ActivateWindow("music", f"plugin://plugin.service.emby-next-gen/?id={EmbyId}&mode=browse&query=similar&server={ServerId}&parentid=0&content=all&libraryid=0")
+        utils.ActivateWindow("music", f"plugin://plugin.service.drivemby/?id={EmbyId}&mode=browse&query=similar&server={ServerId}&parentid=0&content=all&libraryid=0")
     else:
-        utils.ActivateWindow("pictures", f"plugin://plugin.service.emby-next-gen/?id={EmbyId}&mode=browse&query=similar&server={ServerId}&parentid=0&content=all&libraryid=0")
+        utils.ActivateWindow("pictures", f"plugin://plugin.service.drivemby/?id={EmbyId}&mode=browse&query=similar&server={ServerId}&parentid=0&content=all&libraryid=0")
 
 def multiversion():
     Path = xbmc.getInfoLabel('ListItem.Path')

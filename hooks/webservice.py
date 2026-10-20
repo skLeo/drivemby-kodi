@@ -30,21 +30,21 @@ ServerNotAvailable = set()
 xbmc.log(f"EMBY.hooks.webservice: Number of workers {MaxWorkers}", 1) # LOGINFO
 
 # Load binary files once
-BlackMP4 = utils.readFileBinary("special://home/addons/plugin.service.emby-next-gen/resources/black.mp4")
-BlackMKV = utils.readFileBinary("special://home/addons/plugin.service.emby-next-gen/resources/black.mkv")
-BlackAVI = utils.readFileBinary("special://home/addons/plugin.service.emby-next-gen/resources/black.avi")
-BlackWEBM = utils.readFileBinary("special://home/addons/plugin.service.emby-next-gen/resources/black.webm")
-BlackMOV = utils.readFileBinary("special://home/addons/plugin.service.emby-next-gen/resources/black.mov")
-BlackTS = utils.readFileBinary("special://home/addons/plugin.service.emby-next-gen/resources/black.ts")
-BlackMPEG = utils.readFileBinary("special://home/addons/plugin.service.emby-next-gen/resources/black.mpeg")
-BlackWMV = utils.readFileBinary("special://home/addons/plugin.service.emby-next-gen/resources/black.wmv")
-BlackOGV = utils.readFileBinary("special://home/addons/plugin.service.emby-next-gen/resources/black.ogv")
-Black3GP = utils.readFileBinary("special://home/addons/plugin.service.emby-next-gen/resources/black.3gp")
-BlackVOB = utils.readFileBinary("special://home/addons/plugin.service.emby-next-gen/resources/black.vob")
-BlackM4V = utils.readFileBinary("special://home/addons/plugin.service.emby-next-gen/resources/black.m4v")
-BlackFLV = utils.readFileBinary("special://home/addons/plugin.service.emby-next-gen/resources/black.flv")
-BlackMXF = utils.readFileBinary("special://home/addons/plugin.service.emby-next-gen/resources/black.mxf")
-BlackASF = utils.readFileBinary("special://home/addons/plugin.service.emby-next-gen/resources/black.asf")
+BlackMP4 = utils.readFileBinary("special://home/addons/plugin.service.drivemby/resources/black.mp4")
+BlackMKV = utils.readFileBinary("special://home/addons/plugin.service.drivemby/resources/black.mkv")
+BlackAVI = utils.readFileBinary("special://home/addons/plugin.service.drivemby/resources/black.avi")
+BlackWEBM = utils.readFileBinary("special://home/addons/plugin.service.drivemby/resources/black.webm")
+BlackMOV = utils.readFileBinary("special://home/addons/plugin.service.drivemby/resources/black.mov")
+BlackTS = utils.readFileBinary("special://home/addons/plugin.service.drivemby/resources/black.ts")
+BlackMPEG = utils.readFileBinary("special://home/addons/plugin.service.drivemby/resources/black.mpeg")
+BlackWMV = utils.readFileBinary("special://home/addons/plugin.service.drivemby/resources/black.wmv")
+BlackOGV = utils.readFileBinary("special://home/addons/plugin.service.drivemby/resources/black.ogv")
+Black3GP = utils.readFileBinary("special://home/addons/plugin.service.drivemby/resources/black.3gp")
+BlackVOB = utils.readFileBinary("special://home/addons/plugin.service.drivemby/resources/black.vob")
+BlackM4V = utils.readFileBinary("special://home/addons/plugin.service.drivemby/resources/black.m4v")
+BlackFLV = utils.readFileBinary("special://home/addons/plugin.service.drivemby/resources/black.flv")
+BlackMXF = utils.readFileBinary("special://home/addons/plugin.service.drivemby/resources/black.mxf")
+BlackASF = utils.readFileBinary("special://home/addons/plugin.service.drivemby/resources/black.asf")
 
 # Generate HTTP responses
 sendBlackMP4 = f'HTTP/1.1 200 OK\r\nServer: Emby-Next-Gen\r\nConnection: close\r\nContent-Length: {len(BlackMP4)}\r\nContent-Type: video/mp4\r\nAccept-Ranges: none\r\n\r\n'.encode() + BlackMP4
@@ -358,7 +358,7 @@ def worker_Query(WorkerNumber):  # thread by caller
             if args[1] == "settings":
                 client.send(sendOK)
                 client.close()
-                xbmc.executebuiltin('Addon.OpenSettings(plugin.service.emby-next-gen)')
+                xbmc.executebuiltin('Addon.OpenSettings(plugin.service.drivemby)')
                 if utils.DebugLog: xbmc.log(f"EMBY.hooks.webservice (DEBUG): THREAD: [ worker_Query/{WorkerNumber} ] event settings", 1) # LOGDEBUG
                 continue
 
@@ -399,7 +399,7 @@ def worker_Query(WorkerNumber):  # thread by caller
                         elif CacheId2 in cache.QueryCache["All"]:
                             del cache.QueryCache["All"][CacheId2]
 
-                    utils.ActivateWindow("videos", f"plugin://plugin.service.emby-next-gen/?id=0&mode=browse&query=Search&server={ServerId}&parentid=0&content=All&libraryid=0")
+                    utils.ActivateWindow("videos", f"plugin://plugin.service.drivemby/?id=0&mode=browse&query=Search&server={ServerId}&parentid=0&content=All&libraryid=0")
 
                 if utils.DebugLog: xbmc.log(f"EMBY.hooks.webservice (DEBUG): THREAD: [ worker_Query/{WorkerNumber} ] event search", 1) # LOGDEBUG
                 continue
@@ -407,7 +407,7 @@ def worker_Query(WorkerNumber):  # thread by caller
             if mode == 'settings':  # Simple commands
                 client.send(sendOK)
                 client.close()
-                xbmc.executebuiltin('Addon.OpenSettings(plugin.service.emby-next-gen)')
+                xbmc.executebuiltin('Addon.OpenSettings(plugin.service.drivemby)')
                 if utils.DebugLog: xbmc.log(f"EMBY.hooks.webservice (DEBUG): THREAD: [ worker_Query/{WorkerNumber} ] event settings", 1) # LOGDEBUG
                 continue
 

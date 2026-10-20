@@ -613,10 +613,10 @@ def PlayEmby(ItemIds, PlayCommand, StartIndex, StartPositionTicks, ServerData, A
         del Items
 
     if PlayerIdPlaylistId == 2: # picture
-        utils.ActivateWindow("pictures", "plugin://plugin.service.emby-next-gen/?mode=remotepictures", True, 10002)
+        utils.ActivateWindow("pictures", "plugin://plugin.service.drivemby/?mode=remotepictures", True, 10002)
         xbmc.executebuiltin('Container.Refresh')
         RemotePlaybackInit = False
-        xbmc.executebuiltin('SlideShow("plugin://plugin.service.emby-next-gen/?mode=remotepictures")')
+        xbmc.executebuiltin('SlideShow("plugin://plugin.service.drivemby/?mode=remotepictures")')
 
 def load_Remoteitems(Item, Select, PlaylistItem, ServerId):
     ListItem = listitem.set_ListItem(Item, ServerId, None, False, "")

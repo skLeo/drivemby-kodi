@@ -1,0 +1,44 @@
+name: Release
+
+# Push a tag like v12.4.24.1 (matching the version in addon.xml) to build
+# the installable Kodi zip and publish it as a GitHub release.
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check tag matches addon.xml
+        id: meta
+        run: |
+          ADDON_ID=$(grep -oP '<addon id="\K[^"]+' addon.xml)
+          VERSION=$(grep -oP '<addon id="[^"]+" name="[^"]+" version="\K[^"]+' addon.xml)
+          if [ "v$VERSION" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match addon.xml version $VERSION" >&2
+            exit 1
+          fi
+          echo "id=$ADDON_ID" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Build zip
+        run: |
+          ZIP="${{ steps.meta.outputs.id }}-${{ steps.meta.outputs.version }}.zip"
+          git archive --format=zip --prefix="${{ steps.meta.outputs.id }}/" -o "$ZIP" HEAD
+          unzip -l "$ZIP" | tail -1
+          echo "ZIP=$ZIP" >> "$GITHUB_ENV"
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" "$ZIP" \
+            --title "${{ steps.meta.outputs.version }}" \
+            --notes "Install in Kodi: Add-ons → Install from zip file → \`$ZIP\`."

@@ -174,7 +174,7 @@ def SystemEvents():
 
 def opensettings():
     utils.close_dialog("all")
-    xbmc.executebuiltin('Addon.OpenSettings(plugin.service.emby-next-gen)')
+    xbmc.executebuiltin('Addon.OpenSettings(plugin.service.drivemby)')
 
 # Remove Items
 def VideoLibrary_OnRemove(): # Cache queries to minimize database openings
@@ -516,10 +516,10 @@ def setup():
 
     # copy animated icons
     for PluginId in ("video", "image", "audio"):
-        Destination = f"special://home/addons/plugin.{PluginId}.emby-next-gen/resources/icon-animated.gif"
+        Destination = f"special://home/addons/plugin.{PluginId}.drivemby/resources/icon-animated.gif"
 
         if not xbmcvfs.exists(Destination):
-            utils.copyFile("special://home/addons/plugin.service.emby-next-gen/resources/icon-animated.gif", Destination)
+            utils.copyFile("special://home/addons/plugin.service.drivemby/resources/icon-animated.gif", Destination)
 
     if utils.MinimumSetup == "OPENLIBRARY":
         utils.set_settings('MinimumSetup', utils.MinimumVersion)
@@ -566,7 +566,7 @@ def setup():
             # Disable auto-updates
             SQLs = {}
             dbio.DBOpenRW("addon", "settingschanged", SQLs)
-            SQLs["addon"].set_AutoUpdates("plugin.service.emby-next-gen", 1)
+            SQLs["addon"].set_AutoUpdates("plugin.service.drivemby", 1)
             dbio.DBCloseRW("addon", "settingschanged", SQLs)
             return False
 

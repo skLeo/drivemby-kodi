@@ -124,12 +124,12 @@ def monitor_Favorites():
                             KodiItemId = Temp[5][:-4]
                             EmbyType = "Playlist"
                             ContentType = "music"
-                        elif Path.startswith("plugin://plugin.service.emby-next-gen/?mode=playlist&mediatype=video"):
+                        elif Path.startswith("plugin://plugin.service.drivemby/?mode=playlist&mediatype=video"):
                             Temp = Path.split("id=")
                             KodiItemId = Temp[-1]
                             EmbyType = "Playlist"
                             ContentType = "video"
-                        elif Path.startswith("plugin://plugin.service.emby-next-gen/?mode=playlist&mediatype=audio"):
+                        elif Path.startswith("plugin://plugin.service.drivemby/?mode=playlist&mediatype=audio"):
                             Temp = Path.split("id=")
                             KodiItemId = Temp[-1]
                             EmbyType = "Playlist"

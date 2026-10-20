@@ -15,7 +15,7 @@ BackupInProgress = ""
 
 # Create backup root folder
 if not utils.backupPath:
-    utils.set_settings("backupPath", "special://profile/addon_data/plugin.service.emby-next-gen/backup/")
+    utils.set_settings("backupPath", "special://profile/addon_data/plugin.service.drivemby/backup/")
 
 if not xbmcvfs.exists(utils.backupPath):
     utils.mkDir(utils.backupPath)
@@ -44,24 +44,24 @@ def Backup():
 
     with zipfile.ZipFile(xbmcvfs.translatePath(f"{utils.backupPath}{BackupFilename}.zip"), 'w', zipfile.ZIP_STORED, strict_timestamps=False) as ZipFile: # Compression might corrupt data, do not use zipfile.ZIP_DEFLATED, user uncompressed!
         # Backup service plugin
-        utils.update_ProgressBar("Backup", int(0 / 0.10), utils.Translate(33651), "plugin.service.emby-next-gen")
-        compress_Folder("special://home/addons/plugin.service.emby-next-gen/", ZipFile, (), (), (".pyc",))
+        utils.update_ProgressBar("Backup", int(0 / 0.10), utils.Translate(33651), "plugin.service.drivemby")
+        compress_Folder("special://home/addons/plugin.service.drivemby/", ZipFile, (), (), (".pyc",))
 
         # Backup audio plugin
-        utils.update_ProgressBar("Backup", int(1 / 0.10), utils.Translate(33651), "plugin.audio.emby-next-gen")
-        compress_Folder("special://home/addons/plugin.audio.emby-next-gen/", ZipFile, (), (), (".pyc",))
+        utils.update_ProgressBar("Backup", int(1 / 0.10), utils.Translate(33651), "plugin.audio.drivemby")
+        compress_Folder("special://home/addons/plugin.audio.drivemby/", ZipFile, (), (), (".pyc",))
 
         # Backup video plugin
-        utils.update_ProgressBar("Backup", int(2 / 0.10), utils.Translate(33651), "plugin.video.emby-next-gen")
-        compress_Folder("special://home/addons/plugin.video.emby-next-gen/", ZipFile, (), (), (".pyc",))
+        utils.update_ProgressBar("Backup", int(2 / 0.10), utils.Translate(33651), "plugin.video.drivemby")
+        compress_Folder("special://home/addons/plugin.video.drivemby/", ZipFile, (), (), (".pyc",))
 
         # Backup image plugin
-        utils.update_ProgressBar("Backup", int(3 / 0.10), utils.Translate(33651), "plugin.image.emby-next-gen")
-        compress_Folder("special://home/addons/plugin.image.emby-next-gen/", ZipFile, (), (), (".pyc",))
+        utils.update_ProgressBar("Backup", int(3 / 0.10), utils.Translate(33651), "plugin.image.drivemby")
+        compress_Folder("special://home/addons/plugin.image.drivemby/", ZipFile, (), (), (".pyc",))
 
         # Backup userdata
         utils.update_ProgressBar("Backup", int(4 / 0.10), utils.Translate(33651), "userdata")
-        compress_Folder(utils.FolderAddonUserdata, ZipFile, (utils.backupPath, os.path.join(utils.DownloadPath, "EMBY-offline-content", ''), utils.backupPath, os.path.join(utils.DownloadPath, "EMBY-themes", ''), "special://profile/addon_data/plugin.service.emby-next-gen/backup/"), (), ())
+        compress_Folder(utils.FolderAddonUserdata, ZipFile, (utils.backupPath, os.path.join(utils.DownloadPath, "EMBY-offline-content", ''), utils.backupPath, os.path.join(utils.DownloadPath, "EMBY-themes", ''), "special://profile/addon_data/plugin.service.drivemby/backup/"), (), ())
 
         # Backup library
         utils.update_ProgressBar("Backup", int(5 / 0.10), utils.Translate(33651), "library")
@@ -159,7 +159,7 @@ def Restore():
 
     utils.close_dialog(10146) # addoninformation
     RestoreFile = xbmcvfs.translatePath(RestoreFile)
-    FolderExtract = "special://profile/addon_data/plugin.service.emby-next-gen/extract/"
+    FolderExtract = "special://profile/addon_data/plugin.service.drivemby/extract/"
     utils.delFolder(FolderExtract)
     utils.mkDir(FolderExtract)
     FolderExtractReal = xbmcvfs.translatePath(FolderExtract)
@@ -219,64 +219,64 @@ def create_Rollback():
         utils.set_settings("CurrentServicePluginVersion", utils.addon_version)
 
     # backup service plugin
-    RollbackFolder = "special://profile/addon_data/plugin.service.emby-next-gen/rollback/plugin.service.emby-next-gen/"
+    RollbackFolder = "special://profile/addon_data/plugin.service.drivemby/rollback/plugin.service.drivemby/"
     Exists = xbmcvfs.exists(RollbackFolder)
 
     if Exists and Forced:
-        xbmc.log("EMBY.helper.backup: update rollback: delete plugin.service.emby-next-gen", 1) # LOGINFO
+        xbmc.log("EMBY.helper.backup: update rollback: delete plugin.service.drivemby", 1) # LOGINFO
         utils.delFolder(RollbackFolder)
         Exists = False
 
     if not Exists:
-        xbmc.log("EMBY.helper.backup: copy rollback: delete plugin.service.emby-next-gen", 1) # LOGINFO
-        utils.mkDir("special://profile/addon_data/plugin.service.emby-next-gen/rollback/")
+        xbmc.log("EMBY.helper.backup: copy rollback: delete plugin.service.drivemby", 1) # LOGINFO
+        utils.mkDir("special://profile/addon_data/plugin.service.drivemby/rollback/")
         utils.mkDir(RollbackFolder)
-        utils.copytree("special://home/addons/plugin.service.emby-next-gen/", RollbackFolder, (".pyc",), True, False)
+        utils.copytree("special://home/addons/plugin.service.drivemby/", RollbackFolder, (".pyc",), True, False)
 
     # backup audio plugin
-    RollbackFolder = "special://profile/addon_data/plugin.service.emby-next-gen/rollback/plugin.audio.emby-next-gen/"
+    RollbackFolder = "special://profile/addon_data/plugin.service.drivemby/rollback/plugin.audio.drivemby/"
     Exists = xbmcvfs.exists(RollbackFolder)
 
     if Exists and Forced:
-        xbmc.log("EMBY.helper.backup: update rollback: delete plugin.audio.emby-next-gen", 1) # LOGINFO
+        xbmc.log("EMBY.helper.backup: update rollback: delete plugin.audio.drivemby", 1) # LOGINFO
         utils.delFolder(RollbackFolder)
         Exists = False
 
-    if not Exists and xbmcvfs.exists("special://home/addons/plugin.audio.emby-next-gen/"):
-        xbmc.log("EMBY.helper.backup: copy rollback: delete plugin.audio.emby-next-gen", 1) # LOGINFO
-        utils.mkDir("special://profile/addon_data/plugin.service.emby-next-gen/rollback/")
+    if not Exists and xbmcvfs.exists("special://home/addons/plugin.audio.drivemby/"):
+        xbmc.log("EMBY.helper.backup: copy rollback: delete plugin.audio.drivemby", 1) # LOGINFO
+        utils.mkDir("special://profile/addon_data/plugin.service.drivemby/rollback/")
         utils.mkDir(RollbackFolder)
-        utils.copytree("special://home/addons/plugin.audio.emby-next-gen/", RollbackFolder, (".pyc",), True, False)
+        utils.copytree("special://home/addons/plugin.audio.drivemby/", RollbackFolder, (".pyc",), True, False)
 
     # backup video plugin
-    RollbackFolder = "special://profile/addon_data/plugin.service.emby-next-gen/rollback/plugin.video.emby-next-gen/"
+    RollbackFolder = "special://profile/addon_data/plugin.service.drivemby/rollback/plugin.video.drivemby/"
     Exists = xbmcvfs.exists(RollbackFolder)
 
     if Exists and Forced:
-        xbmc.log("EMBY.helper.backup: update rollback: delete plugin.video.emby-next-gen", 1) # LOGINFO
+        xbmc.log("EMBY.helper.backup: update rollback: delete plugin.video.drivemby", 1) # LOGINFO
         utils.delFolder(RollbackFolder)
         Exists = False
 
-    if not Exists and xbmcvfs.exists("special://home/addons/plugin.video.emby-next-gen/"):
-        xbmc.log("EMBY.helper.backup: copy rollback: delete plugin.video.emby-next-gen", 1) # LOGINFO
-        utils.mkDir("special://profile/addon_data/plugin.service.emby-next-gen/rollback/")
+    if not Exists and xbmcvfs.exists("special://home/addons/plugin.video.drivemby/"):
+        xbmc.log("EMBY.helper.backup: copy rollback: delete plugin.video.drivemby", 1) # LOGINFO
+        utils.mkDir("special://profile/addon_data/plugin.service.drivemby/rollback/")
         utils.mkDir(RollbackFolder)
-        utils.copytree("special://home/addons/plugin.video.emby-next-gen/", RollbackFolder, (".pyc",), True, False)
+        utils.copytree("special://home/addons/plugin.video.drivemby/", RollbackFolder, (".pyc",), True, False)
 
     # backup image plugin
-    RollbackFolder = "special://profile/addon_data/plugin.service.emby-next-gen/rollback/plugin.image.emby-next-gen/"
+    RollbackFolder = "special://profile/addon_data/plugin.service.drivemby/rollback/plugin.image.drivemby/"
     Exists = xbmcvfs.exists(RollbackFolder)
 
     if Exists and Forced:
-        xbmc.log("EMBY.helper.backup: update rollback: delete plugin.image.emby-next-gen", 1) # LOGINFO
+        xbmc.log("EMBY.helper.backup: update rollback: delete plugin.image.drivemby", 1) # LOGINFO
         utils.delFolder(RollbackFolder)
         Exists = False
 
-    if not Exists and xbmcvfs.exists("special://home/addons/plugin.image.emby-next-gen/"):
-        xbmc.log("EMBY.helper.backup: copy rollback: delete plugin.image.emby-next-gen", 1) # LOGINFO
-        utils.mkDir("special://profile/addon_data/plugin.service.emby-next-gen/rollback/")
+    if not Exists and xbmcvfs.exists("special://home/addons/plugin.image.drivemby/"):
+        xbmc.log("EMBY.helper.backup: copy rollback: delete plugin.image.drivemby", 1) # LOGINFO
+        utils.mkDir("special://profile/addon_data/plugin.service.drivemby/rollback/")
         utils.mkDir(RollbackFolder)
-        utils.copytree("special://home/addons/plugin.image.emby-next-gen/", RollbackFolder, (".pyc",), True, False)
+        utils.copytree("special://home/addons/plugin.image.drivemby/", RollbackFolder, (".pyc",), True, False)
 
     xbmc.log("EMBY.helper.backup: --<[ update rollback ]", 1) # LOGINFO
 
@@ -284,29 +284,29 @@ def restore_Rollback():
     Success = False
     xbmc.log("EMBY.helper.backup: -->[ rollback ]", 1) # LOGINFO
     # Restore service plugin
-    RestoreServicePlugin = "special://profile/addon_data/plugin.service.emby-next-gen/rollback/plugin.service.emby-next-gen/"
+    RestoreServicePlugin = "special://profile/addon_data/plugin.service.drivemby/rollback/plugin.service.drivemby/"
 
     if xbmcvfs.exists(RestoreServicePlugin):
-        utils.copytree(RestoreServicePlugin, "special://home/addons/plugin.service.emby-next-gen/", (), True, True)
+        utils.copytree(RestoreServicePlugin, "special://home/addons/plugin.service.drivemby/", (), True, True)
         Success = True
 
     # Restore video plugin
-    RestoreVideoPlugin = "special://profile/addon_data/plugin.service.emby-next-gen/rollback/plugin.video.emby-next-gen/"
+    RestoreVideoPlugin = "special://profile/addon_data/plugin.service.drivemby/rollback/plugin.video.drivemby/"
 
     if xbmcvfs.exists(RestoreVideoPlugin):
-        utils.copytree(RestoreVideoPlugin, "special://home/addons/plugin.video.emby-next-gen/", (), True, True)
+        utils.copytree(RestoreVideoPlugin, "special://home/addons/plugin.video.drivemby/", (), True, True)
 
     # Restore audio plugin
-    RestoreAudioPlugin = "special://profile/addon_data/plugin.service.emby-next-gen/rollback/plugin.audio.emby-next-gen/"
+    RestoreAudioPlugin = "special://profile/addon_data/plugin.service.drivemby/rollback/plugin.audio.drivemby/"
 
     if xbmcvfs.exists(RestoreAudioPlugin):
-        utils.copytree(RestoreAudioPlugin, "special://home/addons/plugin.audio.emby-next-gen/", (), True, True)
+        utils.copytree(RestoreAudioPlugin, "special://home/addons/plugin.audio.drivemby/", (), True, True)
 
     # Restore image plugin
-    RestoreImagePlugin = "special://profile/addon_data/plugin.service.emby-next-gen/rollback/plugin.image.emby-next-gen/"
+    RestoreImagePlugin = "special://profile/addon_data/plugin.service.drivemby/rollback/plugin.image.drivemby/"
 
     if xbmcvfs.exists(RestoreImagePlugin):
-        utils.copytree(RestoreImagePlugin, "special://home/addons/plugin.image.emby-next-gen/", (), True, True)
+        utils.copytree(RestoreImagePlugin, "special://home/addons/plugin.image.drivemby/", (), True, True)
 
     xbmc.log("EMBY.helper.backup: --<[ rollback ]", 1) # LOGINFO
     return Success
