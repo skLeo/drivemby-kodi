@@ -138,9 +138,9 @@ def PlaybackStart(PlayKodiType, PlayKodiId):
         ThemeFile = xbmcvfs.translatePath(f"{Path}{ServerId}_{Item['Id']}.{Container}") # Downloaded theme
 
         if not xbmcvfs.exists(ThemeFile): # remote theme
-            ThemeFile = f"{EmbyServer.ServerData['ServerUrl']}/emby/videos/{EmbyId}/stream.{Container}?static=true&MediaSourceId={MediaSourceId}&PlaySessionId={PlaySessionId}&DeviceId={EmbyServer.ServerData['DeviceId']}&api_key={EmbyServer.ServerData['AccessToken']}&stream.{Container}|seekable=0&failonerror=false&verifypeer=false" # seekable=0 must be set -> Kodi uses playerid -1 and not touching playlists
+            ThemeFile = f"{EmbyServer.ServerData['ServerUrl'].rstrip('/')}/emby/videos/{EmbyId}/stream.{Container}?static=true&MediaSourceId={MediaSourceId}&PlaySessionId={PlaySessionId}&DeviceId={EmbyServer.ServerData['DeviceId']}&api_key={EmbyServer.ServerData['AccessToken']}&stream.{Container}|seekable=0&failonerror=false&verifypeer=false" # seekable=0 must be set -> Kodi uses playerid -1 and not touching playlists
 
-        QueuedPlayingItem = [{'QueueableMediaTypes': ["Audio", "Video", "Photo"], 'CanSeek': True, 'IsPaused': False, 'ItemId': int(EmbyId), 'MediaSourceId': MediaSourceId, 'PlaySessionId': PlaySessionId, 'PositionTicks': 0, 'RunTimeTicks': 0, 'VolumeLevel': player.Volume, 'PlaybackRate': 1, 'Shuffle': False, 'RepeatMode': "RepeatNone", 'IsMuted': False}, None, None, None, EmbyServer, PlayerId, "", ""]
+        QueuedPlayingItem = [{'QueueableMediaTypes': ["Audio", "Video", "Photo"], 'CanSeek': True, 'IsPaused': False, 'ItemId': EmbyId, 'MediaSourceId': MediaSourceId, 'PlaySessionId': PlaySessionId, 'PositionTicks': 0, 'RunTimeTicks': 0, 'VolumeLevel': player.Volume, 'PlaybackRate': 1, 'Shuffle': False, 'RepeatMode': "RepeatNone", 'IsMuted': False}, None, None, None, EmbyServer, PlayerId, "", ""]
         ListItem = listitem.set_ListItem(Item, ServerId, "", False)
         ListItem.setPath(ThemeFile)
         KodiId = Item['KodiId']
@@ -200,7 +200,7 @@ def PlaybackStart(PlayKodiType, PlayKodiId):
                     KodiItem['mediatype'] = "song"
 
             _, ListItem = listitem.set_ListItem_from_Kodi_database(KodiItem, ThemeFile, False)
-            QueuedPlayingItem = [{'QueueableMediaTypes': ["Audio", "Video", "Photo"], 'CanSeek': True, 'IsPaused': False, 'ItemId': int(ContentMetadata['EmbyId']), 'MediaSourceId': MediaSourceId, 'PlaySessionId': PlaySessionId, 'PositionTicks': StartTimeTicks, 'RunTimeTicks': Runtime * 10000000, 'VolumeLevel': player.Volume, 'PlaybackRate': 1, 'Shuffle': False, 'RepeatMode': "RepeatNone", 'IsMuted': False}, None, None, None, utils.EmbyServers[ContentMetadata['ServerId']], PlayerId, "", ""]
+            QueuedPlayingItem = [{'QueueableMediaTypes': ["Audio", "Video", "Photo"], 'CanSeek': True, 'IsPaused': False, 'ItemId': ContentMetadata['EmbyId'], 'MediaSourceId': MediaSourceId, 'PlaySessionId': PlaySessionId, 'PositionTicks': StartTimeTicks, 'RunTimeTicks': Runtime * 10000000, 'VolumeLevel': player.Volume, 'PlaybackRate': 1, 'Shuffle': False, 'RepeatMode': "RepeatNone", 'IsMuted': False}, None, None, None, utils.EmbyServers[ContentMetadata['ServerId']], PlayerId, "", ""]
             ThemeLoading["ServerId"] = ContentMetadata['ServerId']
 
             if KodiItem['playcount']:
@@ -656,10 +656,10 @@ def load_KodiItem(KodiContentId, ContentPath, ContentMetadata, StartTimeTicks, T
 
         if ThemeBy == "video": # Video
             PlayerId = 1
-            ThemeFile = f"{utils.EmbyServers[ContentMetadata['ServerId']].ServerData['ServerUrl']}/emby/videos/{ContentMetadata['EmbyId']}/stream.ts?MediaSourceId={MediaSourceId}&PlaySessionId={PlaySessionId}&DeviceId={utils.EmbyServers[ContentMetadata['ServerId']].ServerData['DeviceId']}&api_key={utils.EmbyServers[ContentMetadata['ServerId']].ServerData['AccessToken']}&StartTimeTicks={StartTimeTicks}&MaxAudioChannels=1&VideoCodec=h264&MaxHeight=1080&VideoBitrate=1000000&AudioCodec=aac&MaxFramerate=25&Profile=baseline&stream.ts|seekable=0&failonerror=false&verifypeer=false" # Works
+            ThemeFile = f"{utils.EmbyServers[ContentMetadata['ServerId']].ServerData['ServerUrl'].rstrip('/')}/emby/videos/{ContentMetadata['EmbyId']}/stream.ts?MediaSourceId={MediaSourceId}&PlaySessionId={PlaySessionId}&DeviceId={utils.EmbyServers[ContentMetadata['ServerId']].ServerData['DeviceId']}&api_key={utils.EmbyServers[ContentMetadata['ServerId']].ServerData['AccessToken']}&StartTimeTicks={StartTimeTicks}&MaxAudioChannels=1&VideoCodec=h264&MaxHeight=1080&VideoBitrate=1000000&AudioCodec=aac&MaxFramerate=25&Profile=baseline&stream.ts|seekable=0&failonerror=false&verifypeer=false" # Works
         else: # Audio
             PlayerId = 0
-            ThemeFile = f"{utils.EmbyServers[ContentMetadata['ServerId']].ServerData['ServerUrl']}/emby/audio/{ContentMetadata['EmbyId']}/stream.aac?MediaSourceId={MediaSourceId}&PlaySessionId={PlaySessionId}&DeviceId={utils.EmbyServers[ContentMetadata['ServerId']].ServerData['DeviceId']}&api_key={utils.EmbyServers[ContentMetadata['ServerId']].ServerData['AccessToken']}&StartTimeTicks={StartTimeTicks}&AudioCodec=aac&Profile=baseline&MaxAudioChannels=1&VideoStreamIndex-1&EnableAutoStreamCopy=false&VideoCodec=copy&stream.acc|seekable=0&failonerror=false&verifypeer=false" # Works
+            ThemeFile = f"{utils.EmbyServers[ContentMetadata['ServerId']].ServerData['ServerUrl'].rstrip('/')}/emby/audio/{ContentMetadata['EmbyId']}/stream.aac?MediaSourceId={MediaSourceId}&PlaySessionId={PlaySessionId}&DeviceId={utils.EmbyServers[ContentMetadata['ServerId']].ServerData['DeviceId']}&api_key={utils.EmbyServers[ContentMetadata['ServerId']].ServerData['AccessToken']}&StartTimeTicks={StartTimeTicks}&AudioCodec=aac&Profile=baseline&MaxAudioChannels=1&VideoStreamIndex-1&EnableAutoStreamCopy=false&VideoCodec=copy&stream.acc|seekable=0&failonerror=false&verifypeer=false" # Works
 
         KodiIdLocal = utils.set_EmbyId_ServerId_by_Fake_KodiId(ContentMetadata['EmbyId'], ContentMetadata['ServerId'])
         KodiItem['dbid'] = KodiIdLocal

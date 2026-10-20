@@ -4,3 +4,6 @@ machine_guid
 /resources/media/Thumbs.db
 
 .idea/
+__pycache__/
+*.pyc
+*.orig

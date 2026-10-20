@@ -1,3 +1,21 @@
+# Emby for Kodi — Drivemby edition
+
+This is a modified version of [Emby for Kodi Next Gen](https://github.com/MediaBrowser/plugin.video.emby) by quickmic and the MediaBrowser team. It adds compatibility with [Drivemby](https://drivemby.com), a cloud service with an Emby-compatible API.
+
+What it changes for Drivemby:
+
+- Login, session handshake, request bodies and boolean query parameters follow what Drivemby accepts
+- Rate-limited requests (HTTP 429) back off and retry
+- Library sync works without file paths and without missing metadata fields, and expands box sets into their movies
+- Item IDs are handled as strings, since Drivemby IDs are not numeric
+- Playback progress is reported with a Drivemby-issued play session, so resume points sync back
+
+It still works with a regular Emby server. The `drivemby` branch follows upstream's `next-gen-dev-python3` branch, so upstream fixes can be merged in.
+
+Licensed under the GNU GPL v3, the same as upstream (see `LICENSE.txt`). Not affiliated with Emby or Drivemby.
+
+___
+
 # Emby for Kodi
 
 [![EmbyKodi_Banner](https://i.imgur.com/hx4cx41.png)](https://emby.media/community/index.php?/forum/99-kodi/)

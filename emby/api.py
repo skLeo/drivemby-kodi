@@ -78,6 +78,15 @@ class API:
         if not utils.getCast:
             self.DynamicListsRemoveFields += ("People",)
 
+    # Drivemby only accepts playback reports with a PlaySessionId it issued itself
+    def get_playsessionid(self, Id):
+        _, _, Payload = self.http.request("POST", f"Items/{Id}/PlaybackInfo?UserId={self.ServerData['UserId']}", {}, {}, False, "", None, "")
+
+        if isinstance(Payload, dict):
+            return Payload.get('PlaySessionId')
+
+        return None
+
     def open_livestream(self, Id):
         _, _, Payload = self.http.request("POST", f"Items/{Id}/PlaybackInfo", {'UserId': self.ServerData['UserId'], "IsPlayback": "true", "AutoOpenLiveStream": "true"}, {}, False, "", None, "")
 
@@ -682,6 +691,10 @@ class API:
 
     def get_device(self):
         _, _, Payload = self.http.request("GET", "Sessions", {'DeviceId': self.ServerData['DeviceId']}, {}, False, "", None, "")
+
+        if not Payload: # Drivemby has no GET /Sessions; build a local session so the handshake can continue
+            Payload = [{'Id': self.ServerData['DeviceId'], 'UserId': self.ServerData.get('UserId', ""), 'UserName': self.ServerData.get('UserName') or "Drivemby", 'DeviceId': self.ServerData['DeviceId'], 'DeviceName': utils.device_name, 'Client': "Kodi", 'AdditionalUsers': []}]
+
         return Payload
 
     def get_active_sessions(self):
@@ -833,7 +846,7 @@ class API:
         return Payload
 
     def get_authbyname(self, Username, Password):
-        _, _, Payload = self.http.request("POST", "Users/AuthenticateByName", {'username': Username, 'pw': Password or ""}, {}, False, "", None, "")
+        _, _, Payload = self.http.request("POST", "Users/AuthenticateByName", {'username': Username, 'pw': Password or "", 'Username': Username, 'Pw': Password or ""}, {}, False, "", None, "")
         return Payload
 
     def get_stream_statuscode(self, Id, MediaSourceId):
@@ -853,8 +866,8 @@ class API:
         return Payload
 
     def get_m3u8(self, Path, EmbyId):
-        _, _, MainM3U8 = self.http.request("GET", Path.replace(f"{self.ServerData['ServerUrl']}/emby/" , ""), {}, {}, True, "", None, "")
-        return MainM3U8.decode('utf-8').replace("hls1/main/", f"{self.ServerData['ServerUrl']}/emby/videos/{EmbyId}/hls1/main/").encode()
+        _, _, MainM3U8 = self.http.request("GET", Path.replace(f"{self.ServerData['ServerUrl'].rstrip('/')}/emby/" , ""), {}, {}, True, "", None, "")
+        return MainM3U8.decode('utf-8').replace("hls1/main/", f"{self.ServerData['ServerUrl'].rstrip('/')}/emby/videos/{EmbyId}/hls1/main/").encode()
 
     def get_Fields(self, MediaType, Basic, Dynamic, UserData):
         if not Basic:
@@ -1074,7 +1087,7 @@ def update_sessioninfo(EmbySessionInfo, EventName, PlaylistKodi, PlaylistEmby):
                 else: # EmbyId not found
                     continue
 
-            PlaylistEmby[PlaylistIndex] = {"Id": int(EmbyId), "PlaylistItemId": str(PlaylistIndex)}
+            PlaylistEmby[PlaylistIndex] = {"Id": EmbyId, "PlaylistItemId": str(PlaylistIndex)}
 
         for EmbyDB in EmbyDBs:
             dbio.DBCloseRO(EmbyDB, "Playlist_Add")

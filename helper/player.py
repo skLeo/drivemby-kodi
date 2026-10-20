@@ -701,7 +701,7 @@ def play_Trailer(EmbyServer):
         MediaSourceId = Trailers[0]['MediaSources'][0]['Id']
 
     PlaySessionId = str(uuid.uuid4()).replace("-", "")
-    QueuedPlayingItem = [{'QueueableMediaTypes': ["Audio", "Video", "Photo"], 'CanSeek': True, 'IsPaused': False, 'ItemId': int(Trailers[0]['Id']), 'MediaSourceId': MediaSourceId, 'PlaySessionId': PlaySessionId, 'PositionTicks': 0, 'RunTimeTicks': 0, 'VolumeLevel': Volume, 'PlaybackRate': PlaybackRate[playerops.PlayerId], 'Shuffle': Shuffled[playerops.PlayerId], 'RepeatMode': RepeatMode[playerops.PlayerId], 'IsMuted': Muted}, None, None, None, EmbyServer, playerops.PlayerId, "", "", {}, {}, {}]
+    QueuedPlayingItem = [{'QueueableMediaTypes': ["Audio", "Video", "Photo"], 'CanSeek': True, 'IsPaused': False, 'ItemId': Trailers[0]['Id'], 'MediaSourceId': MediaSourceId, 'PlaySessionId': PlaySessionId, 'PositionTicks': 0, 'RunTimeTicks': 0, 'VolumeLevel': Volume, 'PlaybackRate': PlaybackRate[playerops.PlayerId], 'Shuffle': Shuffled[playerops.PlayerId], 'RepeatMode': RepeatMode[playerops.PlayerId], 'IsMuted': Muted}, None, None, None, EmbyServer, playerops.PlayerId, "", "", {}, {}, {}]
     PathLower = Trailers[0]['Path'].lower()
 
     if (PathLower.startswith("http://") or PathLower.startswith("https://")) and PathLower.find("youtube") != -1 and PathLower.find("plugin.video.youtube") == -1:
@@ -710,9 +710,9 @@ def play_Trailer(EmbyServer):
         Container = Trailers[0].get('Container', 'ukn')
 
         if MediaSourceId:
-            Path = f"{EmbyServer.ServerData['ServerUrl']}/emby/videos/{Trailers[0]['Id']}/stream.{Container}?static=true&MediaSourceId={MediaSourceId}&PlaySessionId={PlaySessionId}&DeviceId={EmbyServer.ServerData['DeviceId']}&api_key={EmbyServer.ServerData['AccessToken']}&stream.{Container}"
+            Path = f"{EmbyServer.ServerData['ServerUrl'].rstrip('/')}/emby/videos/{Trailers[0]['Id']}/stream.{Container}?static=true&MediaSourceId={MediaSourceId}&PlaySessionId={PlaySessionId}&DeviceId={EmbyServer.ServerData['DeviceId']}&api_key={EmbyServer.ServerData['AccessToken']}&stream.{Container}"
         else:
-            Path = f"{EmbyServer.ServerData['ServerUrl']}/emby/videos/{Trailers[0]['Id']}/stream.{Container}?static=true&PlaySessionId={PlaySessionId}&DeviceId={EmbyServer.ServerData['DeviceId']}&api_key={EmbyServer.ServerData['AccessToken']}&stream.{Container}"
+            Path = f"{EmbyServer.ServerData['ServerUrl'].rstrip('/')}/emby/videos/{Trailers[0]['Id']}/stream.{Container}?static=true&PlaySessionId={PlaySessionId}&DeviceId={EmbyServer.ServerData['DeviceId']}&api_key={EmbyServer.ServerData['AccessToken']}&stream.{Container}"
 
     # Play trailer
     ListItem = listitem.set_ListItem(Trailers[0], EmbyServer.ServerData['ServerId'], "", False)
@@ -881,7 +881,7 @@ def load_queuePlayingItem():
         QueuedPlayingItem[3] = 0
 
     playerops.AVStarted = False
-    playerops.EmbyIdPlaying = int(QueuedPlayingItem[0]['ItemId'])
+    playerops.EmbyIdPlaying = QueuedPlayingItem[0]['ItemId']
 
     with utils.SafeLock(playerops.AVStartedCondition):
         playerops.AVStartedCondition.notify_all()

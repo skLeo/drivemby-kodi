@@ -13,6 +13,57 @@ import xbmcvfs
 from helper import utils, queue, artworkcache
 from database import dbio
 
+# Drivemby hides file paths; give items a stable synthetic path so the sync can build Kodi entries
+DrivembyFolderTypes = ("Series", "Season", "BoxSet", "Folder", "CollectionFolder", "MusicAlbum", "MusicArtist", "Playlist")
+DrivembyMediaTypes = ("Movie", "Episode", "Video", "MusicVideo", "Audio", "Trailer")
+
+def drivemby_safe_name(Name):
+    for Char in '/\\:*?"<>|':
+        Name = Name.replace(Char, "_")
+
+    return Name.strip() or "unknown"
+
+# Fields a real Emby server always returns (empty when there is no data), but Drivemby omits
+DrivembyDefaults = {'SpecialFeatureCount': 0, 'LocalTrailerCount': 0, 'PartCount': 1, 'Chapters': [], 'RemoteTrailers': [], 'Taglines': [], 'Studios': [], 'Genres': [], 'Tags': [], 'People': [], 'ProductionLocations': []}
+
+def drivemby_fix_item(Item):
+    if not isinstance(Item, dict) or 'Type' not in Item or 'Id' not in Item:
+        return
+
+    if Item['Type'] in DrivembyFolderTypes or Item['Type'] in DrivembyMediaTypes:
+        Item.setdefault('PresentationUniqueKey', Item['Id'])
+
+        for Key, Value in DrivembyDefaults.items():
+            Item.setdefault(Key, list(Value) if isinstance(Value, list) else Value)
+
+    if Item.get('Path'):
+        return
+
+    if Item['Type'] in DrivembyFolderTypes:
+        Item['Path'] = f"/drivemby/{Item['Type']}/{Item['Id']}/{drivemby_safe_name(Item.get('Name', ''))}"
+    elif Item['Type'] in DrivembyMediaTypes:
+        MediaSources = Item.get('MediaSources') or []
+        Container = Item.get('Container') or (MediaSources[0].get('Container') if MediaSources else "") or "mkv"
+        Container = Container.split(",")[0]
+        Item['Path'] = f"/drivemby/{Item['Type']}/{Item['Id']}/{drivemby_safe_name(Item.get('Name', ''))}.{Container}"
+
+        for MediaSource in MediaSources:
+            if isinstance(MediaSource, dict) and not MediaSource.get('Path'):
+                MediaSource['Path'] = Item['Path']
+
+def drivemby_fix_paths(Payload):
+    if isinstance(Payload, dict):
+        if isinstance(Payload.get('Items'), list):
+            for Item in Payload['Items']:
+                drivemby_fix_item(Item)
+        else:
+            drivemby_fix_item(Payload)
+    elif isinstance(Payload, list):
+        for Item in Payload:
+            drivemby_fix_item(Item)
+
+    return Payload
+
 class HTTP:
     def __init__(self, ServerData, HTTPThreadsRunningCondition, WebsocketRunning, WebsocketMessageQueue):
         self.ServerData = ServerData
@@ -484,7 +535,13 @@ class HTTP:
             ParamsString = ""
             GETPayload = ""
 
+            if (Handler == "Items" or Handler.endswith("/Items")) and 'CollapseBoxSetItems' not in Params: # Drivemby collapses movies into box sets by default
+                Params = {**Params, 'CollapseBoxSetItems': False}
+
             for Query, Param in list(Params.items()):
+                if isinstance(Param, bool): # Drivemby only accepts lowercase booleans
+                    Param = str(Param).lower()
+
                 if Query == "Ids":
                     IdsLen = len(str(Param))
 
@@ -510,7 +567,7 @@ class HTTP:
             if Params:
                 ParamsString = json.dumps(Params)
             else:
-                ParamsString = ""
+                ParamsString = "{}" # Drivemby rejects empty JSON bodies
 
             Request = f"{Method} {self.Connection[ConnectionId]['SubUrl']}{Handler} HTTP/1.1\r\n{HeaderString}Content-Length: {len(ParamsString)}\r\n\r\n{ParamsString}"
             StatusCodeSocket, _ = self.socket_io(Request.encode("utf-8"), ConnectionId, TimeoutSend)
@@ -627,7 +684,7 @@ class HTTP:
 
         if isJSON:
             try:
-                return StatusCode, IncomingDataHeader, json.loads(PayloadTotal)
+                return StatusCode, IncomingDataHeader, drivemby_fix_paths(json.loads(PayloadTotal))
             except MemoryError:
                 xbmc.log(f"EMBY.emby.http: Invalid json content {ConnectionId}: {IncomingDataHeader} error: MemoryError", 3) # LOGERROR
                 return 612, {}, ""
@@ -841,6 +898,39 @@ class HTTP:
             if utils.DebugLog: xbmc.log(f"EMBY.emby.http (DEBUG): [ http ] Method: {Method} / Handler: {Handler} / Params: {Params} / Binary: {Binary} / ConnectionString: {ConnectionString} / CloseConnection: {CloseConnection} / RequestHeader: {RequestHeader}", 1) # LOGDEBUG
             self.send_request(Method, Handler, Params, RequestHeader, Binary, ConnectionString, CloseConnection, ConnectionId, RequestId)
 
+    # Drivemby returns box sets instead of their movies when a movie query is scoped to a library; fetch the movies inside instead
+    def drivemby_expand_boxsets(self, Method, Handler, Params, Binary, ConnectionId, Payload):
+        if Method != "GET" or Binary or not isinstance(Payload, dict) or not isinstance(Payload.get('Items'), list):
+            return Payload
+
+        ItemTypes = str(Params.get('IncludeItemTypes', "")).split(",")
+
+        if "Movie" not in ItemTypes or "BoxSet" in ItemTypes or not any(Item.get('Type') == "BoxSet" for Item in Payload['Items']):
+            return Payload
+
+        Items = []
+
+        for Item in Payload['Items']:
+            if Item.get('Type') != "BoxSet":
+                Items.append(Item)
+                continue
+
+            ChildParams = {**Params, 'ParentId': Item['Id'], 'Recursive': True, 'StartIndex': 0}
+
+            for Retry in range(5):
+                StatusCode, _, Child = self.socket_request("GET", Handler, ChildParams, False, 12, 1200, ConnectionId, "", None, 0)
+
+                if StatusCode != 429 or utils.sleep(2 * (Retry + 1)):
+                    break
+
+            if StatusCode == 200 and isinstance(Child, dict):
+                Items += [ChildItem for ChildItem in Child.get('Items', []) if ChildItem.get('Type') != "BoxSet"]
+            else:
+                xbmc.log(f"EMBY.emby.http: Drivemby box set expand failed {StatusCode} / {Item['Id']}", 2) # LOGWARNING
+
+        Payload['Items'] = Items
+        return Payload
+
     def send_request(self, Method, Handler, Params, RequestHeader, Binary, ConnectionString, CloseConnection, ConnectionId, RequestId):
         self.Requests_Counter(True)
 
@@ -850,6 +940,8 @@ class HTTP:
         # Connectionstring changed
         if not CloseConnection and ConnectionId in self.Connection and ConnectionString.find(self.Connection[ConnectionId]['Hostname']) == -1:
             self.socket_close(ConnectionId)
+
+        RateLimitRetries = 0
 
         while True:
             # Shutdown
@@ -907,12 +999,25 @@ class HTTP:
                 self.socket_close(ConnectionId)
 
             if StatusCode == 200: # OK
+                Payload = self.drivemby_expand_boxsets(Method, Handler, Params, Binary, ConnectionId, Payload)
                 self.Response[RequestId] = (StatusCode, Header, Payload)
                 break
 
             if StatusCode == 204: # OK, no data
                 self.Response[RequestId] = (StatusCode, Header, Payload)
                 break
+
+            if StatusCode == 429: # Drivemby rate limit: back off and retry
+                RateLimitRetries += 1
+
+                if RateLimitRetries <= 10:
+                    xbmc.log(f"EMBY.emby.http: Rate limited, retry {RateLimitRetries} / {Handler}", 2) # LOGWARNING
+
+                    if utils.sleep(2 * RateLimitRetries):
+                        self.Response[RequestId] = noData(601, {}, Binary)
+                        break
+
+                    continue
 
             if StatusCode == 401: # Unauthorized
                 Text = f"{utils.Translate(33147)}\n{str(Payload)}"
@@ -957,7 +1062,7 @@ class HTTP:
                 break
 
             xbmc.log(f"EMBY.emby.http: [ Statuscode ] {StatusCode}", 3) # LOGERROR
-            if utils.DebugLog: xbmc.log(f"EMBY.emby.http (DEBUG): [ Statuscode ] {Payload}", 1) # LOGDEBUG
+            if utils.DebugLog: xbmc.log(f"EMBY.emby.http (DEBUG): [ Statuscode ] {Handler} {Payload}", 1) # LOGDEBUG
             self.Response[RequestId] = noData(StatusCode, {}, Binary)
             break
 
@@ -1000,10 +1105,12 @@ class HTTP:
             if StatusCode != 101:
                 self.socket_close("WEBSOCKET")
 
-                if utils.sleep(1):
+                if utils.sleep(300): # Drivemby has no websocket; retry rarely
                     if utils.DebugLog: xbmc.log(f"EMBY.emby.http (DEBUG): THREAD: ---<[ Websocket {self.ServerData['ServerId']} shutdown 2 ]", 1) # LOGDEBUG
                     self.disable_thread("WEBSOCKET")
                     return
+
+                continue
 
             result = Header.get("sec-websocket-accept", "")
 
@@ -1214,9 +1321,12 @@ class HTTP:
                 self.update_header("ASYNC")
 
                 if Priority:
-                    StatusCode, _, _ = self.socket_request(Command[0], Command[1], Command[2], True, 3, 3, "ASYNC", "", None, 0)
+                    StatusCode, _, AsyncPayload = self.socket_request(Command[0], Command[1], Command[2], True, 3, 3, "ASYNC", "", None, 0)
                 else:
-                    StatusCode, _, _ = self.socket_request(Command[0], Command[1], Command[2], True, 1, 0.1, "ASYNC", "", None, 0)
+                    StatusCode, _, AsyncPayload = self.socket_request(Command[0], Command[1], Command[2], True, 1, 0.1, "ASYNC", "", None, 0)
+
+                if 300 <= StatusCode < 600:
+                    xbmc.log(f"EMBY.emby.http: Async {Command[0]} {Command[1]} -> {StatusCode} {AsyncPayload}", 2) # LOGWARNING
 
                 if StatusCode == 601: # quit
                     if utils.DebugLog: xbmc.log("EMBY.emby.http (DEBUG): THREAD: Exit by 601", 1) # LOGDEBUG
